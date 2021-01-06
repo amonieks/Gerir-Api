@@ -41,17 +41,5 @@ namespace Senai.Gerir.Api.Interfaces
         Usuario BuscarPorId(Guid id);
     }
 
-    public interface ITarefaRepositorio
-    {
-        Tarefa Cadastrar(Tarefa tarefa);
-
-        Tarefa Editar(Tarefa tarefa);
-
-        Tarefa Remover(Guid Id);
-
-        Tarefa Consultar(Guid Id);
-
-        Tarefa BuscarporId(Guid Id);
-
-    }
+ 
 }
