@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Senai.Gerir.Api.Contextos;
 using Senai.Gerir.Api.Dominios;
 using Senai.Gerir.Api.Interfaces;
-using Senai.Gerir.Api.Contextos;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Senai.Gerir.Api.Repositorios
 {
     public class TarefaRepositorio : ITarefaRepositorio
     {
-
-        // Criar representação do banco de Dados
-
         private readonly GerirContext _context;
 
-        // Instancia o obejeto para acessar os métodos do banco de dados(contexto)
         public TarefaRepositorio()
         {
             _context = new GerirContext();
@@ -26,131 +20,107 @@ namespace Senai.Gerir.Api.Repositorios
         {
             try
             {
-                //busca a tarefa utilizando o método BuscarporId
+                //Busca a tarefa pelo seu id
                 var tarefa = BuscarPorId(IdTarefa);
 
-                if (tarefa.Status == false)
-                {
-                    tarefa.Status = true;
-                }else
-                {
-                    tarefa.Status = false;
-                }
+                //Altera o valor do status conforme estiver no banco
+                //Se estiver true o inverso é false
+                //Se estiver false o inverso é true
+                tarefa.Status = !tarefa.Status;
+
+                _context.Tarefas.Update(tarefa);
+                _context.SaveChanges();
 
                 return tarefa;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
-                throw new(ex.Message);
+                throw new Exception(ex.Message);
             }
         }
-
-       
 
         public Tarefa BuscarPorId(Guid IdTarefa)
         {
             try
             {
-                var tarefa = _context.Tarefas.Find(IdTarefa);
-
-                return tarefa;
+                return _context.Tarefas.Find(IdTarefa);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            
         }
 
-       
         public Tarefa Cadastrar(Tarefa tarefa)
         {
             try
             {
                 _context.Tarefas.Add(tarefa);
-
                 _context.SaveChanges();
 
                 return tarefa;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            
         }
 
         public Tarefa Editar(Tarefa tarefa)
         {
             try
             {
-                //busca a tarefa por Id
+                //Busca a Tarefa
                 var tarefaexiste = BuscarPorId(tarefa.Id);
 
-                //testar se existe a tarefa
-                if(tarefaexiste==null)
-                
-                    throw new Exception("Tarefa não encontrada ");
-
-                //Atualiza os dados (Titulo,descrição, categoria, Dataenrega,status,UsuarioID)
+                //Altera os dados da tarefa
                 tarefaexiste.Titulo = tarefa.Titulo;
                 tarefaexiste.Descricao = tarefa.Descricao;
-                tarefaexiste.Categoria = tarefa.Categoria;
                 tarefaexiste.Dataentrega = tarefa.Dataentrega;
-                tarefaexiste.Status = tarefa.Status;
-                tarefaexiste.UsuarioId = tarefa.UsuarioId;
+                tarefaexiste.Categoria = tarefa.Categoria;
 
-                //salva alterações
-
+                //Altera a tarefa no contexto
                 _context.Tarefas.Update(tarefaexiste);
+                //Salva a tarefa
                 _context.SaveChanges();
 
-
-                               
                 return tarefaexiste;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            
         }
 
-        public List<Tarefa> ListarTodos(Guid IdUsuario)
+        public List<Tarefa> Listar(Guid IdUsuario)
         {
             try
             {
-
-            List<Tarefa> tarefas = new List<Tarefa>();
-
-
-                tarefas = (List<Tarefa>)_context.Tarefas.Where(e => e.UsuarioId == IdUsuario);
-
-                return tarefas;
-
+                return _context.Tarefas.Where(
+                            c => c.UsuarioId == IdUsuario
+                            ).ToList();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
-            throw new NotImplementedException();
+                throw new Exception(ex.Message);
             }
-
-
         }
 
         public void Remover(Guid IdTarefa)
         {
             try
             {
+                //Busca a tarefa pelo
                 var tarefa = BuscarPorId(IdTarefa);
 
+                //Remove do contexto em memória
                 _context.Tarefas.Remove(tarefa);
+                //Salva as alterações do contexto
+                _context.SaveChanges();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
-                throw new(ex.Message);
+                throw new Exception(ex.Message);
             }
         }
     }

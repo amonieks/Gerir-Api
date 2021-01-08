@@ -40,6 +40,4 @@ namespace Senai.Gerir.Api.Interfaces
         /// <returns>Retorna as informações do usuário</returns>
         Usuario BuscarPorId(Guid id);
     }
-
- 
 }

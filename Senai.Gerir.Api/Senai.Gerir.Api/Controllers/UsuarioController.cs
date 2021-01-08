@@ -55,7 +55,7 @@ namespace Senai.Gerir.Api.Controllers
                 var token = GerarJsonWebToken(usuarioexiste);
 
                 //retorna sucesso com o Token do Usuário
-                return Ok(token);
+                return Ok(new { token = token});
             }
             catch (System.Exception ex)
             {
@@ -63,17 +63,24 @@ namespace Senai.Gerir.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Busca as informações do Usuário 
+        /// </summary>
+        /// <returns>Retorna o usuario</returns>
         [Authorize]
         [HttpGet]
         public IActionResult MeusDados()
         {
             try
-            {   
-                var claimsUsuario= HttpContext.User.Claims;
+            {
+                //Pega as informações das claims referente ao usuário
+                var claimsUsuario = HttpContext.User.Claims;
 
-                var usuarioId = claimsUsuario.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
+                //Pega o id do usuário na Claim Jti
+                var usuarioid = claimsUsuario.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
 
-                var usuario = _usuarioRepositorio.BuscarPorId(new Guid(usuarioId.Value));
+                //Pega as informações do usuário
+                var usuario = _usuarioRepositorio.BuscarPorId(new Guid(usuarioid.Value));
 
                 return Ok(usuario);
             }
@@ -89,28 +96,49 @@ namespace Senai.Gerir.Api.Controllers
         {
             try
             {
-                //Pega as informações das claims referentes ao usuario
+                //Pega as informações das claims referente ao usuário
                 var claimsUsuario = HttpContext.User.Claims;
 
-                //Pega o ide do usuario na claim jti
-                var usuarioId = claimsUsuario.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
+                //Pega o id do usuário na Claim Jti
+                var usuarioid = claimsUsuario.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
 
-                // Atribuo o valor do usuarioid ao id do usuario recebido
-                usuario.Id = new Guid(usuarioId.Value);
+                //Atribuo o valor do usuarioid ao id do usuario recebido
+                usuario.Id = new Guid(usuarioid.Value);
 
-
-                // envia para o meto editar o s dados do usuario recebido
+                //Envia para o metodo editar os dados do usuário recebido
                 _usuarioRepositorio.Editar(usuario);
 
                 return Ok(usuario);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
                 return BadRequest(ex.Message);
             }
         }
-    
+
+
+        [Authorize]
+        [HttpDelete]
+        public IActionResult Remover()
+        {
+            try
+            {
+                //Pega as informações das claims referente ao usuário
+                var claimsUsuario = HttpContext.User.Claims;
+
+                //Pega o id do usuário na Claim Jti
+                var usuarioid = claimsUsuario.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
+
+                _usuarioRepositorio.Remover(new Guid(usuarioid.Value));
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         private string GerarJsonWebToken(Usuario usuario)
         {
             //Chave de Segurança

@@ -23,7 +23,13 @@ namespace Senai.Gerir.Api
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers()
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                        options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                    });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Senai.Gerir.Api", Version = "v1" });
@@ -44,6 +50,17 @@ namespace Senai.Gerir.Api
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("GerirChaveSeguranca"))
                     };
                 });
+
+            //Adiciona o cors a Api
+            services.AddCors(options =>
+            {
+                //Adiciona uma politica de Cors
+                options.AddPolicy("PoliticaCors",
+                    builder => builder.AllowAnyOrigin() //Acesso a toda origem
+                                       .AllowAnyMethod() //Acesso a todos os metódos
+                                       .AllowAnyHeader() //Acesso a todos os Headers
+                    );
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,6 +78,8 @@ namespace Senai.Gerir.Api
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.UseCors("PoliticaCors");
 
             app.UseEndpoints(endpoints =>
             {
